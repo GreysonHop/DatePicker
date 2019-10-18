@@ -7,6 +7,27 @@
     android:layout_height="wrap_content"
     android:background="#f5f9fc">
 
+    <TextView
+        android:id="@+id/tv_only_one_switch"
+        android:layout_width="107dp"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="19dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginRight="19dp"
+        android:layout_marginBottom="10dp"
+        android:background="@drawable/bg_corner15_blue"
+        android:gravity="center"
+        android:paddingTop="6dp"
+        android:paddingBottom="6dp"
+        android:textColor="@color/white"
+        android:textSize="12sp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@id/v_line"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="2019年7月25日"
+        tools:visibility="visible" />
+
     <RadioGroup
         android:id="@+id/rg_switch_date_time"
         android:layout_width="wrap_content"
@@ -16,9 +37,11 @@
         android:paddingTop="10dp"
         android:paddingRight="19dp"
         android:paddingBottom="10dp"
-        app:layout_constraintBottom_toTopOf="@id/fl_content_panel"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@id/v_line"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toTopOf="parent"
+        tools:visibility="gone">
 
         <RadioButton
             android:id="@+id/cb_date_btn"
@@ -30,7 +53,7 @@
             android:gravity="center"
             android:paddingTop="6dp"
             android:paddingBottom="6dp"
-            android:textColor="@android:color/white"
+            android:textColor="@color/white"
             android:textSize="12sp"
             tools:text="2019年7月25日" />
 
@@ -43,7 +66,7 @@
             android:gravity="center"
             android:paddingTop="6dp"
             android:paddingBottom="6dp"
-            android:textColor="#3E82FB"
+            android:textColor="@color/blue_date_picker"
             android:textSize="12sp"
             tools:text="18:00" />
 
@@ -53,59 +76,33 @@
         android:id="@+id/tv_confirm"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
         android:layout_marginLeft="8dp"
         android:layout_marginRight="10dp"
         android:gravity="center"
         android:padding="10dp"
         android:text="确定"
-        android:textColor="#3E82FB"
+        android:textColor="@color/blue_date_picker"
         android:textStyle="bold"
-        app:layout_constraintBottom_toTopOf="@id/fl_content_panel"
+        app:layout_constraintBottom_toTopOf="@id/v_line"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <View
+        android:id="@+id/v_line"
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:background="#f5f9fc"
+        app:layout_constraintBottom_toTopOf="@id/fl_content_panel"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
     <FrameLayout
         android:id="@+id/fl_content_panel"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="parent">
-
-        <View
-            android:id="@+id/v_inflater"
-            android:layout_width="match_parent"
-            android:layout_height="0dp" />
-
-        <LinearLayout
-            android:id="@+id/ll_calendar_picker"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <LinearLayout
-                android:id="@+id/ll_week"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:paddingTop="2dp"
-                android:paddingBottom="2dp" />
-
-            <greyson.demo.datepicker.CalendarPicker
-                android:id="@+id/myCalendarPicker"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@color/white" />
-
-        </LinearLayout>
-
-        <greyson.demo.datepicker.TimePicker
-            android:id="@+id/myTimePicker"
-            android:layout_width="wrap_content"
-            android:layout_height="200dp"
-            android:layout_gravity="center"
-            android:gravity="center"
-            android:visibility="gone"
-            tools:visibility="invisible" />
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
 
     </FrameLayout>
 

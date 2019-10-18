@@ -2,17 +2,17 @@ package greyson.demo.datepicker;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
-import android.util.TypedValue;
 import android.view.Gravity;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.util.ArrayList;
 
-import greyson.demo.datepicker.utils.MeasureUtil;
+import greyson.demo.datepicker.utils.SizeUtils;
 import greyson.demo.datepicker.wheelView.ArrayWheelAdapter;
 import greyson.demo.datepicker.wheelView.LineConfig;
 import greyson.demo.datepicker.wheelView.OnItemPickListener;
@@ -51,7 +51,7 @@ public class TimePicker extends LinearLayout {
         layoutParams.gravity = Gravity.CENTER_VERTICAL;
 
 
-        for (int i = 1; i <= 24; i++) {
+        for (int i = 0; i <= 23; i++) {
             mHourList.add(fillZero(i));
         }
 
@@ -59,12 +59,12 @@ public class TimePicker extends LinearLayout {
             mMinuteList.add(fillZero(i));
         }
 
-        mHourView.setCanLoop(true);
-//        mHourView.setSelectedTextColor(textColorFocus);
-//        mHourView.setUnSelectedTextColor(textColorNormal);
+        mHourView.setCanLoop(false);
+        mHourView.setTypeface(Typeface.SERIF);
         mHourView.setDividerType(LineConfig.DividerType.FILL);
         mHourView.setAdapter(new ArrayWheelAdapter<>(mHourList));
-//        mHourView.setCurrentItem(mSelectedHourIndex);
+        mHourView.setCurrentItem(0);
+        mSelectedHour = mHourList.get(0);
 //        mHourView.setLineConfig(lineConfig);
         mHourView.setLayoutParams(layoutParams);
         mHourView.setOnItemPickListener(new OnItemPickListener<String>() {
@@ -87,21 +87,21 @@ public class TimePicker extends LinearLayout {
         TextView labelView = new TextView(getContext());
         LayoutParams lableLP = new LayoutParams(layoutParams.width, layoutParams.height);
         lableLP.gravity = layoutParams.gravity;
-        lableLP.leftMargin = MeasureUtil.dp2px(getContext(), 29);
-        lableLP.rightMargin = MeasureUtil.dp2px(getContext(), 27);
+        lableLP.bottomMargin = SizeUtils.dp2px(getContext(), 3);
+        lableLP.leftMargin = SizeUtils.dp2px(getContext(), 29);
+        lableLP.rightMargin = SizeUtils.dp2px(getContext(), 27);
         labelView.setLayoutParams(lableLP);
         labelView.setTextColor(Color.parseColor("#283851"));
-        labelView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
+        labelView.setTextSize(SizeUtils.sp2px(getContext(), 14));
         labelView.setText(":");
         addView(labelView);
 
         //分钟
-        mMinuteView.setCanLoop(true);
-//        mMinuteView.setTextSize(textSize);//must be called before setDateList
-//        mMinuteView.setSelectedTextColor(textColorFocus);
-//        mMinuteView.setUnSelectedTextColor(textColorNormal);
+        mMinuteView.setCanLoop(false);
+        mMinuteView.setTypeface(Typeface.DEFAULT);
         mMinuteView.setAdapter(new ArrayWheelAdapter<>(mMinuteList));
-//        mMinuteView.setCurrentItem(mSelectedMinuteIndex);
+        mMinuteView.setCurrentItem(0);
+        mSelectedMinute = mMinuteList.get(0);
         mMinuteView.setDividerType(LineConfig.DividerType.FILL);
 //        mMinuteView.setLineConfig(lineConfig);
         mMinuteView.setLayoutParams(layoutParams);
@@ -161,6 +161,14 @@ public class TimePicker extends LinearLayout {
     @NonNull
     public static String fillZero(int number) {
         return number < 10 ? "0" + number : String.valueOf(number);
+    }
+
+    public String getSelectedHour() {
+        return mSelectedHour;
+    }
+
+    public String getSelectedMinute() {
+        return mSelectedMinute;
     }
 
     /**

@@ -13,7 +13,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Scroller;
 
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -24,7 +23,7 @@ import greyson.demo.datepicker.calendars.DPCManager;
 import greyson.demo.datepicker.entities.DPInfo;
 import greyson.demo.datepicker.languages.DPLManager;
 import greyson.demo.datepicker.themes.DPTManager;
-import greyson.demo.datepicker.utils.MeasureUtil;
+import greyson.demo.datepicker.utils.SizeUtils;
 
 /**
  * Created by Greyson
@@ -73,7 +72,7 @@ public class CalendarPicker extends View {
     private void init() {
         mScroller = new Scroller(getContext());
         mPaint.setTextAlign(Paint.Align.CENTER);
-        mCanAutoScrollGapY = MeasureUtil.dp2px(getContext(), (int) mCanAutoScrollGapY);
+        mCanAutoScrollGapY = SizeUtils.dp2px(getContext(), (int) mCanAutoScrollGapY);
 
         Calendar calendar = Calendar.getInstance();
         mCurrentYear = calendar.get(Calendar.YEAR);
@@ -201,6 +200,12 @@ public class CalendarPicker extends View {
                     }
                     computeDate();
                     mTotalScrollY = mLastTotalScrollY + getHeight();
+                } else {
+                    /* 没有切页时不会顺滑地滚回原来的位置的bug，是因为没加下面这句代码，会导致后面的smoothScrollTo方法
+                    要滚向的目标位置不是原位置mLastTotalScrollY，而是手指起来时的位置，而这种情况下后面就会：因为还是
+                    当前月份，并且滚动的目标位置不变，所以直接刷新View和数据，也就形成了直接“跳回”原来月份视图、没有慢慢
+                    滚动的动画的现象 */
+                    mTotalScrollY = mLastTotalScrollY;
                 }
                 smoothScrollTo(0, mTotalScrollY);
                 mLastTotalScrollY = mTotalScrollY;
@@ -307,7 +312,7 @@ public class CalendarPicker extends View {
         Paint.FontMetrics fontMetrics = mPaint.getFontMetrics();
         if (isToday) {
             mPaint.setColor(isSelectedDay ? Color.WHITE : isWeekend ? mTManager.colorWeekend() : mTManager.colorG());
-            mPaint.setTextSize(MeasureUtil.dp2px(getContext(), 14));
+            mPaint.setTextSize(SizeUtils.dp2px(getContext(), 14));
             if (DPLManager.getInstance().isSameLanguage(Locale.CHINA)) {//temporary deal
                 canvas.drawText("今天", rect.centerX(), rect.centerY(), mPaint);
             } else {
@@ -339,12 +344,12 @@ public class CalendarPicker extends View {
 
             //测量“十一月”中“十一”字，或者“Jul”中“J”字的大小
             Rect monthNumberRect = new Rect();
-            mPaint.setTextSize(MeasureUtil.dp2px(getContext(), 18));
+            mPaint.setTextSize(SizeUtils.dp2px(getContext(), 18));
             mPaint.getTextBounds(monthNumber, 0, monthNumber.length(), monthNumberRect);
 
             //测量“月”字，或“ul”字的大小
             Rect monthSignRect = new Rect();
-            mPaint.setTextSize(MeasureUtil.dp2px(getContext(), 10));
+            mPaint.setTextSize(SizeUtils.dp2px(getContext(), 10));
             mPaint.getTextBounds(monthSign, 0, monthSign.length(), monthSignRect);
 
             //计算两种字体的位置
@@ -353,10 +358,10 @@ public class CalendarPicker extends View {
 
             canvas.drawText(monthSign, monthSignX, y, mPaint);
 
-            mPaint.setTextSize(MeasureUtil.dp2px(getContext(), 18));
+            mPaint.setTextSize(SizeUtils.dp2px(getContext(), 18));
             canvas.drawText(monthNumber, monthNumberX, y, mPaint);
         } else {
-            mPaint.setTextSize(MeasureUtil.dp2px(getContext(), 14));
+            mPaint.setTextSize(SizeUtils.dp2px(getContext(), 14));
             mPaint.setColor(isSelectedDay ? Color.WHITE : isWeekend ? mTManager.colorWeekend() : mTManager.colorG());
             canvas.drawText(strDay, rect.centerX(), y, mPaint);
         }

@@ -6,6 +6,8 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.Date;
+
 public class MainActivity extends AppCompatActivity {
 
     private DatePickDialog datePickDialog;
@@ -32,6 +34,6 @@ public class MainActivity extends AppCompatActivity {
     public void onClick(View view) {
         datePickDialog.show();
 //        datePickDialog.setSelectedDate(selectedDate, selectedTime);
-//        datePickDialog.setSelectedDate(new Date());
+        datePickDialog.setSelectedDate(new Date());
     }
 }
