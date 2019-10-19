@@ -19,10 +19,7 @@
 
 1、点击第一项，显示所有视图，并且点击了时间选择视图：
 
-![pic1](https://raw.githubusercontent.com/GreysonHop/DatePicker/master/pic/DatePicker_1.png#pic_left)
-
-
-![pic2](https://raw.githubusercontent.com/GreysonHop/DatePicker/master/pic/DatePicker_2.png)
+![pic1](https://raw.githubusercontent.com/GreysonHop/DatePicker/master/pic/DatePicker_1.png)![pic2](https://raw.githubusercontent.com/GreysonHop/DatePicker/master/pic/DatePicker_2.png)
 
 2、主页点击第二项，只显示日历的视图，并点击了“10月24日”：
 
