@@ -23,25 +23,39 @@ import greyson.demo.datepicker.wheelView.WheelView;
  */
 public class TimePicker extends LinearLayout {
 
-    final WheelView mHourView = new WheelView(getContext());
-    final WheelView mMinuteView = new WheelView(getContext());
+    private final WheelView mHourView = new WheelView(getContext());
+    private final WheelView mMinuteView = new WheelView(getContext());
     private ArrayList<String> mHourList = new ArrayList<>();
     private ArrayList<String> mMinuteList = new ArrayList<>();
 
     private OnWheelListener onWheelListener;
 
     private String mSelectedHour, mSelectedMinute;
+    private int mMinuteGap;//分钟选择器中分钟数之间的间隔，如平时显示的0,1,2...59，间隔为1
 
     public TimePicker(Context context) {
-        this(context, null);
+        this(context, 1);
+    }
+
+    /**
+     * @param context
+     * @param minuteGap 修改时间选择器中分钟数的间隔（必须是大于等于1的整数），默认为1
+     */
+    public TimePicker(Context context, int minuteGap) {
+        this(context, null, 0, minuteGap);
     }
 
     public TimePicker(Context context, @Nullable AttributeSet attrs) {
-        this(context, attrs, 0);
+        this(context, attrs, 0, 1);
     }
 
     public TimePicker(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+        this(context, attrs, defStyleAttr, 1);
+    }
+
+    public TimePicker(Context context, @Nullable AttributeSet attrs, int defStyleAttr, int minuteGap) {
         super(context, attrs, defStyleAttr);
+        mMinuteGap = minuteGap <= 0 ? 1 : minuteGap;
         init();
     }
 
@@ -55,16 +69,11 @@ public class TimePicker extends LinearLayout {
             mHourList.add(fillZero(i));
         }
 
-        for (int i = 0; i < 60; i = i + 15) {
-            mMinuteList.add(fillZero(i));
-        }
-
         mHourView.setCanLoop(false);
         mHourView.setTypeface(Typeface.SERIF);
         mHourView.setDividerType(LineConfig.DividerType.FILL);
         mHourView.setAdapter(new ArrayWheelAdapter<>(mHourList));
-        mHourView.setCurrentItem(0);
-        mSelectedHour = mHourList.get(0);
+        mSelectedHour = mHourView.getCurrentItem();
 //        mHourView.setLineConfig(lineConfig);
         mHourView.setLayoutParams(layoutParams);
         mHourView.setOnItemPickListener(new OnItemPickListener<String>() {
@@ -92,16 +101,15 @@ public class TimePicker extends LinearLayout {
         lableLP.rightMargin = SizeUtils.dp2px(getContext(), 27);
         labelView.setLayoutParams(lableLP);
         labelView.setTextColor(Color.parseColor("#283851"));
-        labelView.setTextSize(SizeUtils.sp2px(getContext(), 14));
+        labelView.setTextSize(getResources().getDimensionPixelSize(R.dimen.text_wheel_time_colon));
         labelView.setText(":");
         addView(labelView);
 
         //分钟
         mMinuteView.setCanLoop(false);
         mMinuteView.setTypeface(Typeface.DEFAULT);
-        mMinuteView.setAdapter(new ArrayWheelAdapter<>(mMinuteList));
-        mMinuteView.setCurrentItem(0);
-        mSelectedMinute = mMinuteList.get(0);
+        mSelectedMinute = updateMinuteDateWithGap(mMinuteGap);
+
         mMinuteView.setDividerType(LineConfig.DividerType.FILL);
 //        mMinuteView.setLineConfig(lineConfig);
         mMinuteView.setLayoutParams(layoutParams);
@@ -117,6 +125,27 @@ public class TimePicker extends LinearLayout {
         });
     }
 
+    /**
+     * 以新的间隔，更新分钟滚轮的数据，如gap=1时，数据为：0,1,2,3...59；gap为15时，数据为：0,15,30,45
+     *
+     * @param gap 间隔数大小
+     * @return 更新数据后当前选中的分钟数
+     */
+    public String updateMinuteDateWithGap(int gap) {
+        mMinuteGap = gap;
+        mMinuteList.clear();
+        for (int i = 0; i < 60; i = i + gap) {
+            mMinuteList.add(fillZero(i));
+        }
+        mMinuteView.setAdapter(new ArrayWheelAdapter<>(mMinuteList));
+
+        if (gap > 1) {
+            mSelectedMinute = fillZero(getNearMinuteInCurrGap(mSelectedMinute));
+        }
+        int selectedIndex = mMinuteList.indexOf(mSelectedMinute);
+        mMinuteView.setCurrentItem(selectedIndex);
+        return mSelectedMinute;
+    }
 
     /*private void changeMinuteData(int selectedHour) {
         if (startHour == endHour) {
@@ -181,35 +210,75 @@ public class TimePicker extends LinearLayout {
             return;
         }
 
-        if (timeStr.matches("^((0[1-9])|(1[0-9])|(2[0-4])):((00)|(15)|(30)|(45))$")) {
+        if (!timeStr.matches("^(([0,1][0-9])|(2[0-3])):([0-5][0-9])$")) {//检查传入的时间是否合法
+            return;
+        }
+
+
+        if (mMinuteGap == 15) {
+            if (timeStr.matches("^(([0,1][0-9])|(2[0-3])):((00)|(15)|(30)|(45))$")) {//传入的时间的分钟数刚好是15分为间隔
+                String[] times = timeStr.split(":");
+                mSelectedHour = times[0];
+                mSelectedMinute = times[1];
+                mHourView.setCurrentItem(mHourList.indexOf(mSelectedHour));
+                mMinuteView.setCurrentItem(mMinuteList.indexOf(mSelectedMinute));
+
+            } else {
+                String[] times = timeStr.split(":");
+                mSelectedHour = times[0];
+                mHourView.setCurrentItem(mHourList.indexOf(mSelectedHour));
+
+//              minuteIndex = timeInt / 15 + 1;
+                mSelectedMinute = fillZero(getNearMinuteInCurrGap(times[1]));
+                int minuteIndex = mMinuteList.indexOf(mSelectedMinute);
+                mMinuteView.setCurrentItem(minuteIndex);
+
+                if (onWheelListener != null) {//因为传入的分钟数不符合15分为间隔而进行了"取整"，所以要通过外面更新目前选中的分钟数
+                    onWheelListener.onMinuteWheeled(minuteIndex, mSelectedMinute);
+                }
+            }
+        } else {
             String[] times = timeStr.split(":");
             mSelectedHour = times[0];
             mSelectedMinute = times[1];
             mHourView.setCurrentItem(mHourList.indexOf(mSelectedHour));
             mMinuteView.setCurrentItem(mMinuteList.indexOf(mSelectedMinute));
-
-        } else if (timeStr.matches("^((0[1-9])|(1[0-9])|(2[0-4])):([0-5][0-9])$")) {
-            String[] times = timeStr.split(":");
-            mSelectedHour = times[0];
-            mHourView.setCurrentItem(mHourList.indexOf(mSelectedHour));
-
-            int minuteIndex = 0;
-            try {
-                int timeInt = Integer.valueOf(times[1]);
-                minuteIndex = timeInt / 15 + 1;
-                if (minuteIndex == 4) {
-                    minuteIndex--;
-                }
-            } catch (Exception e) {
-            }
-
-            mSelectedMinute = mMinuteList.get(minuteIndex);
-            mMinuteView.setCurrentItem(minuteIndex);
-
-            if (onWheelListener != null) {
-                onWheelListener.onMinuteWheeled(minuteIndex, mSelectedMinute);
-            }
         }
+    }
+
+    /**
+     * 参考{@link #getNearMinuteInCurrGap(int)}
+     *
+     * @param minute
+     * @return
+     */
+    private int getNearMinuteInCurrGap(String minute) {
+        int minuteInt = 0;
+        try {
+            minuteInt = Integer.valueOf(minute);
+        } catch (Exception e) {
+        }
+        return getNearMinuteInCurrGap(minuteInt);
+    }
+
+    /**
+     * 通过已给的分钟数，转换成当前分钟间隔数下最接近的某个数值，如当{@link #mMinuteGap}=15时，17转为15，23转为30。
+     *
+     * @param minute 想要转为的分钟数
+     * @return 当前分钟间隔下的分钟数据列表中的一项
+     */
+    private int getNearMinuteInCurrGap(int minute) {
+        int nearMinute = 0;
+        int scale = minute / mMinuteGap;
+        int remainder = minute % mMinuteGap;
+        if (remainder == 0) {
+            nearMinute = minute;
+        } else if (remainder <= mMinuteGap / 2) {
+            nearMinute = scale * mMinuteGap;
+        } else {
+            nearMinute = (scale + 1) * mMinuteGap;
+        }
+        return nearMinute;
     }
 
     public void setOnWheelListener(OnWheelListener onWheelListener) {

@@ -49,9 +49,10 @@ public class CalendarPicker extends View {
 
     private List<String> mDateSelected = new ArrayList<>();
 
-    private int mCurrentYear, mCurrentMonth;
-    private int mNextYear, mNextMonth;
-    private int mPreviousYear, mPreviousMonth;
+    private int mThisYear;//系统时间当前年份
+    private int mCurrentYear, mCurrentMonth;//日历组件正中间显示的月份
+    private int mNextYear, mNextMonth;//日历组件屏幕外下面显示的月份
+    private int mPreviousYear, mPreviousMonth;//日历组件屏幕外上面显示的月份
 
     private float mCanAutoScrollGapY = 60;
     private float mCanSignScrollGapY = 8;
@@ -75,7 +76,7 @@ public class CalendarPicker extends View {
         mCanAutoScrollGapY = SizeUtils.dp2px(getContext(), (int) mCanAutoScrollGapY);
 
         Calendar calendar = Calendar.getInstance();
-        mCurrentYear = calendar.get(Calendar.YEAR);
+        mThisYear = mCurrentYear = calendar.get(Calendar.YEAR);
         mCurrentMonth = calendar.get(Calendar.MONTH) + 1;
         computeDate();
     }
@@ -314,12 +315,12 @@ public class CalendarPicker extends View {
             mPaint.setColor(isSelectedDay ? Color.WHITE : isWeekend ? mTManager.colorWeekend() : mTManager.colorG());
             mPaint.setTextSize(SizeUtils.dp2px(getContext(), 14));
             if (DPLManager.getInstance().isSameLanguage(Locale.CHINA)) {//temporary deal
-                canvas.drawText("今天", rect.centerX(), rect.centerY(), mPaint);
+                canvas.drawText("今天", rect.centerX(), rect.centerY() - fontMetrics.bottom, mPaint);
             } else {
-                canvas.drawText("Today", rect.centerX(), rect.centerY(), mPaint);
+                canvas.drawText("Today", rect.centerX(), rect.centerY() - fontMetrics.bottom, mPaint);
             }
 
-            y = rect.centerY() + fontMetrics.descent - fontMetrics.ascent;
+            y = rect.centerY() - fontMetrics.ascent;
         } else {
             y = rect.centerY() - fontMetrics.top / 2 - fontMetrics.bottom / 2;
         }
@@ -330,36 +331,51 @@ public class CalendarPicker extends View {
         if (isMonthFirstDay) {
             String monthFirstDay = mDPLManager.titleMonth()[month - 1];
             mPaint.setColor(isSelectedDay ? Color.WHITE : Color.parseColor("#3E82FB"));
+            if (isToday) {
+                mPaint.setTextSize(SizeUtils.dp2px(getContext(), 14));
+                canvas.drawText(monthFirstDay, rect.centerX(), y, mPaint);
 
-            String monthNumber;
-            String monthSign;
-            if (DPLManager.getInstance().isSameLanguage(Locale.CHINA)) {
-                monthNumber = monthFirstDay.substring(0, monthFirstDay.length() - 1);
-                monthSign = monthFirstDay.substring(monthFirstDay.length() - 1);
+            } else if (mThisYear != year) {
+
+                mPaint.setColor(isSelectedDay ? Color.WHITE : Color.parseColor("#3E82FB"));
+
+                mPaint.setTextSize(SizeUtils.dp2px(getContext(), 14));
+                canvas.drawText(monthFirstDay, rect.centerX(), rect.centerY() - fontMetrics.bottom, mPaint);
+                mPaint.setTextSize(SizeUtils.dp2px(getContext(), 12));
+                y = rect.centerY() - fontMetrics.ascent;
+                canvas.drawText(String.valueOf(year), rect.centerX(), y, mPaint);
 
             } else {
-                monthNumber = monthFirstDay.substring(0, 1);
-                monthSign = monthFirstDay.substring(1);
+                String monthNumber;
+                String monthSign;
+                if (DPLManager.getInstance().isSameLanguage(Locale.CHINA)) {
+                    monthNumber = monthFirstDay.substring(0, monthFirstDay.length() - 1);
+                    monthSign = monthFirstDay.substring(monthFirstDay.length() - 1);
+
+                } else {
+                    monthNumber = monthFirstDay.substring(0, 1);
+                    monthSign = monthFirstDay.substring(1);
+                }
+
+                //测量“十一月”中“十一”字，或者“Jul”中“J”字的大小
+                Rect monthNumberRect = new Rect();
+                mPaint.setTextSize(SizeUtils.dp2px(getContext(), 18));
+                mPaint.getTextBounds(monthNumber, 0, monthNumber.length(), monthNumberRect);
+
+                //测量“月”字，或“ul”字的大小
+                Rect monthSignRect = new Rect();
+                mPaint.setTextSize(SizeUtils.dp2px(getContext(), 10));
+                mPaint.getTextBounds(monthSign, 0, monthSign.length(), monthSignRect);
+
+                //计算两种字体的位置
+                int monthNumberX = rect.centerX() - (monthSignRect.width() / 2);
+                int monthSignX = monthNumberRect.width() / 2 + rect.centerX();
+
+                canvas.drawText(monthSign, monthSignX, y, mPaint);
+
+                mPaint.setTextSize(SizeUtils.dp2px(getContext(), 18));
+                canvas.drawText(monthNumber, monthNumberX, y, mPaint);
             }
-
-            //测量“十一月”中“十一”字，或者“Jul”中“J”字的大小
-            Rect monthNumberRect = new Rect();
-            mPaint.setTextSize(SizeUtils.dp2px(getContext(), 18));
-            mPaint.getTextBounds(monthNumber, 0, monthNumber.length(), monthNumberRect);
-
-            //测量“月”字，或“ul”字的大小
-            Rect monthSignRect = new Rect();
-            mPaint.setTextSize(SizeUtils.dp2px(getContext(), 10));
-            mPaint.getTextBounds(monthSign, 0, monthSign.length(), monthSignRect);
-
-            //计算两种字体的位置
-            int monthNumberX = rect.centerX() - (monthSignRect.width() / 2);
-            int monthSignX = monthNumberRect.width() / 2 + rect.centerX();
-
-            canvas.drawText(monthSign, monthSignX, y, mPaint);
-
-            mPaint.setTextSize(SizeUtils.dp2px(getContext(), 18));
-            canvas.drawText(monthNumber, monthNumberX, y, mPaint);
         } else {
             mPaint.setTextSize(SizeUtils.dp2px(getContext(), 14));
             mPaint.setColor(isSelectedDay ? Color.WHITE : isWeekend ? mTManager.colorWeekend() : mTManager.colorG());
